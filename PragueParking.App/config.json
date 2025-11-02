@@ -1,0 +1,20 @@
+{
+  "TotalSpots": 100,
+  "SpotSize": 4,
+  "FreeParkingMinutes": 10,
+  "BusSpotLimit": 50,
+  "Prices": {
+    "Bicycle": 5,
+    "Motorcycle": 10,
+    "Car": 20,
+    "Bus": 80
+  },
+  "VehicleSizes": {
+    "Bicycle": 1,
+    "Motorcycle": 2,
+    "Car": 4,
+    "Bus": 16
+  },
+  "ParkingDataFile": "parking_data.json"
+}
+
