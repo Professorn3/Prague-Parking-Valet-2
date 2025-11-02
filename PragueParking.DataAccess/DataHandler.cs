@@ -2,20 +2,18 @@
 using Newtonsoft.Json;
 using System.IO;
 using System.Collections.Generic;
-using System;
 
 namespace PragueParking.DataAccess
 {
-    // Den här filen ska BARA innehålla DataHandler-klassen
     public class DataHandler
     {
-        private static readonly JsonSerializerSettings _jsonSettings = new Newtonsoft.Json.JsonSerializerSettings
+        private static JsonSerializerSettings _jsonSettings = new JsonSerializerSettings
         {
             TypeNameHandling = TypeNameHandling.Objects,
             Formatting = Formatting.Indented
         };
 
-        public Configuration LoadConfig(string configFilePath)
+        public Configuration? LoadConfig(string configFilePath)
         {
             if (!File.Exists(configFilePath))
             {
@@ -25,7 +23,7 @@ namespace PragueParking.DataAccess
             }
 
             string json = File.ReadAllText(configFilePath);
-            return JsonConvert.DeserializeObject<Configuration>(json, _jsonSettings);
+            return JsonConvert.DeserializeObject<Configuration?>(json, _jsonSettings);
         }
 
         public void SaveConfig(Configuration config, string configFilePath)
@@ -42,13 +40,14 @@ namespace PragueParking.DataAccess
             }
 
             string json = File.ReadAllText(garageDataPath);
-            return JsonConvert.DeserializeObject<ParkingGarage>(json, _jsonSettings);
+            return JsonConvert.DeserializeObject<ParkingGarage?>(json, _jsonSettings);
         }
 
+        // FIX: Den här metoden sparar till rätt fil (garageDataPath)
+        // och använder inte 'configFilePath' alls.
         public void SaveGarage(ParkingGarage garage, string garageDataPath)
         {
             string json = JsonConvert.SerializeObject(garage, _jsonSettings);
-            // *** VIKTIG FIX: *** Sparade till fel fil förut
             File.WriteAllText(garageDataPath, json);
         }
 
@@ -59,7 +58,7 @@ namespace PragueParking.DataAccess
                 TotalSpots = 100,
                 SpotSize = 4,
                 FreeParkingMinutes = 10,
-                ParkingDataFile = "parking_data.json",
+                BusSpotLimit = 50,
                 Prices = new Dictionary<string, int>
                 {
                     { "Bicycle", 5 },
@@ -73,7 +72,8 @@ namespace PragueParking.DataAccess
                     { "Motorcycle", 2 },
                     { "Car", 4 },
                     { "Bus", 16 }
-                }
+                },
+                ParkingDataFile = "parking_data.json"
             };
         }
     }
