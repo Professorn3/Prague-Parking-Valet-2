@@ -1,6 +1,8 @@
 ﻿using System.Collections.Generic;
 using System;
 
+// samlar alla konfigurationsinställningar för parkeringsgaraget
+
 namespace PragueParking.Core
 {
     public class Configuration

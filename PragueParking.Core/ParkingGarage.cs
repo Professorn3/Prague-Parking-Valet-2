@@ -5,6 +5,7 @@ using System.Linq;
 
 namespace PragueParking.Core
 {
+    // representerar parkeringsgaraget med dess platser och hanterar parkering och avparkering
     public class ParkingGarage
     {
         public List<IParkingSpot> Spots { get; set; }
@@ -71,7 +72,7 @@ namespace PragueParking.Core
             }
 
             // Normal parkering för Bil, MC, Cykel
-            var spot = Spots.ElementAtOrDefault(spotNumber - 1); // Hitta plats
+            var spot = Spots.ElementAtOrDefault(spotNumber - 1); 
             if (spot == null)
             {
                 return false; // Platsen existerar inte
@@ -167,15 +168,15 @@ namespace PragueParking.Core
                 return null;
             }
 
-            // Vi hittade fordonet, hämta ut det
+           
             var vehicle = spot.Unpark(regNummer);
             spotNumber = spot.SpotNumber;
 
             if (vehicle is Bus)
             {
                 // bussen ska ta sin plats + 3 extra rutor (16 storlek)
-                int startIndex = spotNumber - 1; // 0-baserat index
-                if (startIndex + 3 < Spots.Count) // Säkerhetskoll
+                int startIndex = spotNumber - 1; 
+                if (startIndex + 3 < Spots.Count) 
                 {
                     if (Spots[startIndex + 1] is ParkingSpot spot2) spot2.OccupiedByBusReg = null;
                     if (Spots[startIndex + 2] is ParkingSpot spot3) spot3.OccupiedByBusReg = null;

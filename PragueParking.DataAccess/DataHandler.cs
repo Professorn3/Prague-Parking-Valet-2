@@ -5,6 +5,8 @@ using System.Collections.Generic;
 
 namespace PragueParking.DataAccess
 {
+    // hanterar laddning och sparning av konfiguration och parkeringsdata
+
     public class DataHandler
     {
         private static JsonSerializerSettings _jsonSettings = new JsonSerializerSettings

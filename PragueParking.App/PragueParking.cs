@@ -395,9 +395,7 @@ namespace PragueParking.App
             AnsiConsole.Write(table);
         }
 
-        // ==========================================================
-        // HÄR ÄR DEN UPPDATERADE KART-LOGIKEN
-        // ==========================================================
+        // Kartlogiken för att visa varje parkeringsplats
         private static string GetSpotMarkup(IParkingSpot spot)
         {
             if (config == null) return "[red]ERR[/]";
@@ -405,30 +403,25 @@ namespace PragueParking.App
             string spotNum = $"[bold]P {spot.SpotNumber}[/]";
             string busMarker = (spot.SpotNumber <= config.BusSpotLimit) ? "B" : "";
 
-            // --- NY LOGIK FÖR BUSS ---
-            // 1. Kolla om platsen är blockerad av en buss
-            // Vi måste casta (typ-omvandla) för att se den nya egenskapen
             if (spot is ParkingSpot ps && ps.OccupiedByBusReg != null)
             {
                 return $"[dim red]{spotNum}{busMarker}\n(Buss: {ps.OccupiedByBusReg})[/]";
             }
-            // --- SLUT NY LOGIK ---
 
             int fill = spot.GetCurrentFill();
             int capacity = spot.Capacity;
 
-            // 2. Kolla om platsen är tom
+            //  Kolla om platsen är tom
             if (fill == 0)
             {
                 return $"[green]{spotNum}{busMarker}[/]";
             }
 
-            // 3. Bygg strängen med fordon (Buss, Bil, MC, etc.)
+            // Bygg strängen med fordon (Buss, Bil, MC, etc.)
             string vehicles = string.Join("\n", spot.ParkedVehicles.Select(v =>
                 $"{v.VehicleType.Substring(0, Math.Min(3, v.VehicleType.Length))}: {(!string.IsNullOrEmpty(v.RegNumber) ? v.RegNumber : "!!!")}"));
 
-            // 4. Platsen är full (antingen 4/4 av MC, eller en Buss 16/16)
-            // GetCurrentFill() returnerar nu Capacity (4) för en buss-plats
+              //  Platsen är full (antingen 4/4 av MC, eller en Buss 16/16)
             if (fill >= capacity)
             {
                 return $"[red]{spotNum}{busMarker} ({fill}/{capacity})\n{vehicles}[/]";

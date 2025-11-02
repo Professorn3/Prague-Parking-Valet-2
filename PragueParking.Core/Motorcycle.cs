@@ -1,6 +1,8 @@
 ﻿namespace PragueParking.Core
 {
-	public class Motorcycle : Vehicle
+    // ärver från Vehicle och sätter Size till 2
+
+    public class Motorcycle : Vehicle
 	{
 		public override string VehicleType => "Motorcycle";
 		public override int Size => 2;

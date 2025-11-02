@@ -2,6 +2,8 @@
 
 namespace PragueParking.Core
 {
+
+    // mall för en parkeringsplats
     public interface IParkingSpot
     {
         int SpotNumber { get; }

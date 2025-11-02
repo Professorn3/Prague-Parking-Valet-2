@@ -1,5 +1,6 @@
 ﻿namespace PragueParking.Core
 {
+    //ärver från Vehicle och sätter Size till 4
 
     public class Car : Vehicle
     {
