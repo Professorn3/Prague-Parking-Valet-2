@@ -1,6 +1,6 @@
 
 
-´´## Prague Parking 2.1
+## Prague Parking 2.1
 
 A C# console application for managing a parking garage using JSON for data storage.
 
