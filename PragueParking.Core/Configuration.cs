@@ -9,7 +9,7 @@ namespace PragueParking.Core
         public int SpotSize { get; set; } = 4;
         public int FreeParkingMinutes { get; set; } = 10;
 
-        // FIX: Här är raden som saknades
+
         public int BusSpotLimit { get; set; } = 50;
 
         public Dictionary<string, int> Prices { get; set; } = new Dictionary<string, int>();

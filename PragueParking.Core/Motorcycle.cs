@@ -3,7 +3,7 @@
 	public class Motorcycle : Vehicle
 	{
 		public override string VehicleType => "Motorcycle";
-		public override int Size => 2; // Enligt VG-spec
+		public override int Size => 2;
 
 		public Motorcycle(string regNumber) : base(regNumber) { }
 		public Motorcycle() : base() { }

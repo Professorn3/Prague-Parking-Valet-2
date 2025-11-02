@@ -1,6 +1,6 @@
 ﻿namespace PragueParking.Core
 {
-    // REPARERAD: Ärver från Vehicle och anropar base()
+
     public class Car : Vehicle
     {
         public override string VehicleType => "Car";

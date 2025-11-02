@@ -43,8 +43,8 @@ namespace PragueParking.DataAccess
             return JsonConvert.DeserializeObject<ParkingGarage?>(json, _jsonSettings);
         }
 
-        // FIX: Den här metoden sparar till rätt fil (garageDataPath)
-        // och använder inte 'configFilePath' alls.
+        //  Den här metoden sparar nu till rätt fil
+
         public void SaveGarage(ParkingGarage garage, string garageDataPath)
         {
             string json = JsonConvert.SerializeObject(garage, _jsonSettings);

@@ -6,11 +6,11 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
-namespace PragueParking.Appfv
+namespace PragueParking.App
 {
     class Program
     {
-        // Globala variabler som alla metoder kommer åt
+
         private static readonly string configFilePath = "config.json";
         private static DataHandler dataHandler = new DataHandler();
         private static Configuration? config;
@@ -18,7 +18,7 @@ namespace PragueParking.Appfv
 
         static void Main()
         {
-            Console.Title = "Prague Parking 2.1 (VG-version)";
+            Console.Title = "Prague Parking 2.1";
 
             try
             {
@@ -49,10 +49,10 @@ namespace PragueParking.Appfv
                 }
                 else
                 {
-                    AnsiConsole.MarkupLine("[green]Parkeringsdata laddad.[/]");
+                    AnsiConsole.MarkupLine("[green]Parkeringsdata uppladdad.[/]");
                 }
 
-                // Synkronisera garaget med config *efter* laddning (ifall config ändrats)
+                // Synkronisera garaget med config 
                 SynchronizeGarageWithConfig(config, garage);
             }
             catch (Exception ex)
@@ -63,7 +63,7 @@ namespace PragueParking.Appfv
                 return;
             }
 
-            AnsiConsole.MarkupLine("Tryck valfri tangent för att starta...");
+            AnsiConsole.MarkupLine("Tryck valfri tangent för att starta programmet...");
             Console.ReadKey(true);
 
             RunMainMenu();
@@ -80,8 +80,8 @@ namespace PragueParking.Appfv
                     return;
                 }
 
-                Console.Clear(); // Använd standard Console.Clear()
-                ShowGarageMap(); // Rita kartan
+                Console.Clear();
+                ShowGarageMap(); // Översikten för P-huset
 
                 var choice = AnsiConsole.Prompt(
                     new SelectionPrompt<string>()
@@ -92,7 +92,7 @@ namespace PragueParking.Appfv
                             "2. Hämta ut fordon",
                             "3. Flytta fordon",
                             "4. Sök fordon",
-                            "5. Ladda om konfiguration (VG)",
+                            "5. Ladda om konfiguration",
                             "0. Avsluta"
                         }));
 
@@ -125,13 +125,13 @@ namespace PragueParking.Appfv
                 }
                 catch (Exception ex)
                 {
-                    AnsiConsole.MarkupLine("\n[red]Ett oväntat fel inträffade:[/]");
+                    AnsiConsole.MarkupLine("\n[red]Ett fel inträffade:[/]");
                     AnsiConsole.WriteException(ex);
                 }
 
                 if (keepRunning)
                 {
-                    AnsiConsole.MarkupLine("\nTryck valfri tangent för att återgå till menyn...");
+                    AnsiConsole.MarkupLine("\nTryck valfri tangent för att återgå till början");
                     Console.ReadKey(true);
                 }
             }
@@ -143,7 +143,7 @@ namespace PragueParking.Appfv
         {
             if (garage == null || config == null) return;
 
-            // Lägg till "Avbryt" som ett val
+            // Avbryt finns som ett val
             var choices = new List<string>(config.VehicleSizes.Keys);
             choices.Add("Avbryt");
 
@@ -188,17 +188,12 @@ namespace PragueParking.Appfv
             {
                 parkedAtSpot = AnsiConsole.Ask<int>($"Ange platsnummer (1-{config.TotalSpots}): ");
 
-                if (vehicle is Bus && parkedAtSpot > config.BusSpotLimit)
-                {
-                    AnsiConsole.MarkupLine($"[red]Fel: Bussar får endast parkera på plats 1-{config.BusSpotLimit}.[/]");
-                    success = false;
-                }
-                else
-                {
-                    success = garage.ParkVehicle(vehicle, parkedAtSpot);
-                }
+
+                success = garage.ParkVehicle(vehicle, parkedAtSpot);
             }
+
             else
+
             {
                 success = garage.ParkVehicle(vehicle, out parkedAtSpot);
             }
@@ -210,7 +205,7 @@ namespace PragueParking.Appfv
             }
             else
             {
-                AnsiConsole.MarkupLine("[red]Kunde inte parkera fordonet. Platsen är full, ogiltig, eller fordonstypen är inte tillåten där.[/]");
+                AnsiConsole.MarkupLine("[red]Kunde inte parkera fordonet. Platsen(erna) är fulla, ogiltiga, eller fordonstypen är inte tillåten där.[/]");
             }
         }
 
@@ -266,13 +261,7 @@ namespace PragueParking.Appfv
             AnsiConsole.MarkupLine($"[yellow]Fordon {vehicle.RegNumber} hämtat från plats {oldSpotNumber}.[/]");
             int newSpotNumber = AnsiConsole.Ask<int>($"Ange ny plats (1-{config.TotalSpots}): ");
 
-            if (vehicle is Bus && newSpotNumber > config.BusSpotLimit)
-            {
-                AnsiConsole.MarkupLine($"[red]Fel: Bussar får endast parkera på plats 1-{config.BusSpotLimit}. Fordonet flyttas tillbaka till plats {oldSpotNumber}.[/]");
-                garage.ParkVehicle(vehicle, oldSpotNumber); // Parkera tillbaka
-                return;
-            }
-
+            // Försök parkera på den nya platsen
             if (garage.ParkVehicle(vehicle, newSpotNumber))
             {
                 AnsiConsole.MarkupLine($"[green]Fordon {vehicle.RegNumber} flyttat till plats {newSpotNumber}.[/]");
@@ -282,7 +271,7 @@ namespace PragueParking.Appfv
             {
                 AnsiConsole.MarkupLine($"[red]Kunde inte parkera på plats {newSpotNumber} (platsen full eller ogiltig).[/]");
                 AnsiConsole.MarkupLine($"[yellow]Fordonet parkeras tillbaka på sin gamla plats {oldSpotNumber}.[/]");
-                garage.ParkVehicle(vehicle, oldSpotNumber);
+                garage.ParkVehicle(vehicle, oldSpotNumber); // Parkera tillbaka
             }
         }
 
@@ -308,13 +297,11 @@ namespace PragueParking.Appfv
             }
         }
 
-        // ==========================================================
-        // HÄR ÄR DEN REPARERADE "LADDA OM"-METODEN
-        // ==========================================================
         private static void Menu_ReloadConfig()
         {
             // Bekräfta först
-            if (!AnsiConsole.Confirm("Detta laddar om config.json och skapar ett NYTT TOMT P-hus.\nALLA parkerade fordon i minnet kommer raderas. Vill du fortsätta?"))
+            string prompt = "Detta laddar om config.json och skapar ett NYTT TOMT P-hus.\nALLA parkerade fordon i minnet kommer raderas. Vill du fortsätta?";
+            if (!AnsiConsole.Confirm(prompt))
             {
                 AnsiConsole.MarkupLine("[yellow]Omladdning avbruten.[/]");
                 return;
@@ -328,13 +315,11 @@ namespace PragueParking.Appfv
                 if (config == null)
                 {
                     AnsiConsole.MarkupLine("[red]Kunde inte ladda config.json. Avbryter.[/]");
-                    // Försök ladda om den gamla configen för att undvika krasch
-                    config = dataHandler.LoadConfig(configFilePath);
+                    config = dataHandler.LoadConfig(configFilePath); // Försök ladda om den gamla
                     return;
                 }
 
-                // Steg 2: Skapa ett NYTT, TOMT P-hus baserat på den nya configen
-                // Detta raderar all gammal data i minnet.
+                // Steg 2: Skapa ett NYTT, TOMT P-hus
                 garage = new ParkingGarage(config);
 
                 AnsiConsole.MarkupLine("[green]Omladdning klar! P-huset är nu tomt.[/]");
@@ -350,14 +335,10 @@ namespace PragueParking.Appfv
 
         #region Hjälp-metoder
 
-        // Denna metod uppdaterar P-huset (som laddats från fil)
-        // för att matcha nya inställningar i config.json (t.ex. ny SpotSize)
         private static void SynchronizeGarageWithConfig(Configuration config, ParkingGarage garage)
         {
-            // Ta bort platser om config har färre platser än P-huset
             if (garage.Spots.Count > config.TotalSpots)
             {
-                // Vi kollar baklänges om det är säkert att ta bort platserna
                 for (int i = garage.Spots.Count - 1; i >= config.TotalSpots; i--)
                 {
                     if (garage.Spots[i].GetCurrentFill() == 0)
@@ -370,7 +351,6 @@ namespace PragueParking.Appfv
                     }
                 }
             }
-            // Lägg till platser om config har fler platser
             else if (garage.Spots.Count < config.TotalSpots)
             {
                 for (int i = garage.Spots.Count + 1; i <= config.TotalSpots; i++)
@@ -379,12 +359,11 @@ namespace PragueParking.Appfv
                 }
             }
 
-            // Uppdatera kapacitet på alla befintliga platser
             foreach (var spotInterface in garage.Spots)
             {
-                if (spotInterface is ParkingSpot spot) // Typ-omvandla
+                if (spotInterface is ParkingSpot spot)
                 {
-                    spot.Capacity = config.SpotSize; // Nu kan vi ändra kapaciteten
+                    spot.Capacity = config.SpotSize;
                 }
             }
         }
@@ -416,29 +395,46 @@ namespace PragueParking.Appfv
             AnsiConsole.Write(table);
         }
 
+        // ==========================================================
+        // HÄR ÄR DEN UPPDATERADE KART-LOGIKEN
+        // ==========================================================
         private static string GetSpotMarkup(IParkingSpot spot)
         {
             if (config == null) return "[red]ERR[/]";
 
-            int fill = spot.GetCurrentFill();
-            int capacity = spot.Capacity;
             string spotNum = $"[bold]P {spot.SpotNumber}[/]";
             string busMarker = (spot.SpotNumber <= config.BusSpotLimit) ? "B" : "";
 
+            // --- NY LOGIK FÖR BUSS ---
+            // 1. Kolla om platsen är blockerad av en buss
+            // Vi måste casta (typ-omvandla) för att se den nya egenskapen
+            if (spot is ParkingSpot ps && ps.OccupiedByBusReg != null)
+            {
+                return $"[dim red]{spotNum}{busMarker}\n(Buss: {ps.OccupiedByBusReg})[/]";
+            }
+            // --- SLUT NY LOGIK ---
+
+            int fill = spot.GetCurrentFill();
+            int capacity = spot.Capacity;
+
+            // 2. Kolla om platsen är tom
             if (fill == 0)
             {
                 return $"[green]{spotNum}{busMarker}[/]";
             }
 
-            // Bygg strängen med fordonsinformation
+            // 3. Bygg strängen med fordon (Buss, Bil, MC, etc.)
             string vehicles = string.Join("\n", spot.ParkedVehicles.Select(v =>
-                $"{v.VehicleType.Substring(0, Math.Min(3, v.VehicleType.Length))}: {(!string.IsNullOrEmpty(v.RegNumber) ? v.RegNumber : "REG?")}"));
+                $"{v.VehicleType.Substring(0, Math.Min(3, v.VehicleType.Length))}: {(!string.IsNullOrEmpty(v.RegNumber) ? v.RegNumber : "!!!")}"));
 
+            // 4. Platsen är full (antingen 4/4 av MC, eller en Buss 16/16)
+            // GetCurrentFill() returnerar nu Capacity (4) för en buss-plats
             if (fill >= capacity)
             {
                 return $"[red]{spotNum}{busMarker} ({fill}/{capacity})\n{vehicles}[/]";
             }
 
+            // 5. Platsen är delvis fylld (MC/Cyklar)
             return $"[yellow]{spotNum}{busMarker} ({fill}/{capacity})\n{vehicles}[/]";
         }
 

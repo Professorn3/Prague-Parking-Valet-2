@@ -11,7 +11,7 @@ namespace PragueParking.Core
         int GetCurrentFill();
         bool CanPark(IVehicle vehicle);
 
-        // FIX: Denna metod lades till för att lösa 'does not contain definition for Park'
+
         bool Park(IVehicle vehicle);
 
         IVehicle? Unpark(string regNummer);
