@@ -8,13 +8,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
     <PackageReference Include="Spectre.Console" Version="0.53.0" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Prague-Parking-Valet-2\PragueParking.DataAccess\PragueParking.DataAccess.csproj" />
     <ProjectReference Include="..\PragueParking.Core\PragueParking.Core.csproj" />
+    <ProjectReference Include="..\PragueParking.DataAccess\PragueParking.DataAccess.csproj" />
   </ItemGroup>
 
   <ItemGroup>

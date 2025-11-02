@@ -7,11 +7,13 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.4">
+      <TreatAsUsed>true</TreatAsUsed>
+    </PackageReference>
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\PragueParking.Core\PragueParking.Core.csproj" />
+    <ProjectReference Include="..\PragueParking.Core\PragueParking.Core.csproj" />
   </ItemGroup>
 
 </Project>
