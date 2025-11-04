@@ -1,78 +1,76 @@
+
+```
 ## Personlig Reflektion (VG-del)
 
-Här följer min personliga reflektion över projektet och kursen.
+Här är min personliga reflektion över projektet och kursen.
 
 ### 4.1 Sammanfattning
 
-Detta projekt har varit en övergång från grundläggande skripting i C# till att bygga en sammanhållen, objektorienterad applikation med en tydlig arkitektur. Målet var att refaktorera ett befintligt system till att bli mer underhållbart, flexibelt och robust genom att använda klasser, arv, interface och en uppdelning i flera projekt (klassbibliotek).
+Det här projektet handlade om att gå från enklare C#-scripting till att bygga en riktig, objektorienterad applikation. Målet var att strukturera om (refaktorera) ett gammalt system så att det blev lättare att underhålla och bygga vidare på. Jag använde klasser, arv, interface och delade upp koden i flera projekt (klassbibliotek) för att lyckas.
 
 ### 4.2 Hur jag löste uppgiften
 
-Jag strukturerade min lösning i fyra separata projekt för att följa principen om "Separation of Concerns":
+Jag delade upp lösningen i fyra projekt för att hålla koden organiserad (enligt principen "Separation of Concerns"):
 
-* **`PragueParking.Core`:** Hjärtat i applikationen. Här finns all kärnlogik.
-    * **Interface:** `IVehicle` och `IParkingSpot` definierar kontrakten för hur ett fordon och en P-plats ska bete sig.
+* **`PragueParking.Core`:** Här finns all kärnlogik, själva "hjärnan" i programmet.
+    * **Interface:** `IVehicle` och `IParkingSpot` bestämmer *vad* ett fordon och en P-plats måste kunna göra.
     * **Klasser:**
-        * `Vehicle`: En abstrakt basklass (eller en vanlig klass som implementerar `IVehicle`) som `Car`, `Motorcycle`, `Bus`, och `Bicycle` ärver ifrån.
-        * `ParkingSpot`: Hanterar logiken för en enskild P-plats, inklusive att hålla reda på vilka fordon som står där och hur mycket plats som är kvar.
-        * `ParkingGarage`: Innehåller en `List<IParkingSpot>` och hanterar all övergripande logik som att parkera, hämta och flytta fordon.
+        * `Vehicle`: En basklass (som implementerar `IVehicle`) som `Car`, `Motorcycle`, `Bus`, och `Bicycle` ärver ifrån.
+        * `ParkingSpot`: Sköter logiken för en enskild P-plats, som att hålla koll på vilka fordon som står där och hur mycket plats som är kvar.
+        * `ParkingGarage`: Hanterar själva garaget, som en lista av P-platser (`List<IParkingSpot>`), och sköter logik för att parkera, hämta och flytta fordon.
 
-* **`PragueParking.App`:** Användargränssnittet. Detta projekt innehåller ingen affärslogik, utan anropar bara metoder i `ParkingGarage`.
-    * `Program.cs` innehåller huvudmenyn och använder `Spectre.Console` för att rita ut menyn och den visuella kartan över P-huset.
+* **`PragueParking.App`:** Detta är användargränssnittet (det användaren ser). Det innehåller ingen "tänkande" logik, utan anropar bara metoder i `Core`-projektet. Här hanteras menyn och den visuella kartan av P-huset med hjälp av `Spectre.Console`.
 
-* **`PragueParking.DataAccess`:** Ansvarar för all filhantering.
-    * `DataHandler.cs` har metoder som `LoadConfig`, `SaveGarage`, och `LoadGarage`. Detta gör att Core-projektet inte behöver veta hur data sparas (om det är JSON, XML eller en databas).
+* **`PragueParking.DataAccess`:** Sköter allt som har med filhantering att göra (spara/ladda).
+    * `DataHandler.cs` har metoder som `LoadConfig`, `SaveGarage`, och `LoadGarage`. Fördelen är att `Core`-projektet inte behöver bry sig om *hur* datan sparas (om det är JSON, XML eller en databas).
 
-* **`PragueParking.Test`:** Enhetstester för att verifiera att specifika delar av logiken (t.ex. kostnadsberäkning eller parkeringslogik) fungerar som de ska.
+* **`PragueParking.Test`:** Enhetstester för att kolla att viktiga delar av logiken (som kostnadsberäkning eller parkeringsregler) fungerar som de ska.
 
 ### 4.3 Utmaningar i uppgiften och hur de löstes
 
-Jag stötte på två stora utmaningar under projektets gång.
+Jag stötte på två stora utmaningar.
 
 **Utmaning 1: Hantering av JSON och Arv (Polymorfism)**
 
-Ett av de första och mest kluriga problemen var att spara och ladda P-huset till JSON. P-huset har en `List<IParkingSpot>`, och varje `ParkingSpot` har en `List<IVehicle>`. Problemet är att JSON-deserialiseraren inte vet om ett `IVehicle` i filen ska återskapas som en `Car`, `Bus` eller `Motorcycle`.
+Ett klurigt problem var att spara och ladda garaget till en JSON-fil. Garaget har en lista av P-platser, som i sin tur har en lista av fordon (`List<IVehicle>`). När man laddar filen, hur vet programmet om ett `IVehicle` ska återskapas som en `Car`, `Bus` eller `Motorcycle`?
 
-**Min första (misslyckade) ansats:** Jag försökte bygga en egen, anpassad `JsonConverter` (en `VehicleConverter`). Detta visade sig vara extremt komplicerat och ledde till buggar och svårläst kod. Som mina anteckningar (bild 2) visar, "den behövdes inte och orsakade bara problem".
+**Mitt första (misslyckade) försök:** Jag försökte bygga en egen "översättare" (`JsonConverter`). Det blev väldigt komplicerat och skapade mest buggar, vilket mina anteckningar (bild 2) också visar.
 
-**Lösningen:** Jag upptäckte att `Newtonsoft.Json` har en inbyggd lösning för detta. Genom att ta bort hela min anpassade `VehicleConverter` och istället lägga till en inställning vid serialisering och deserialisering (`TypeNameHandling`), kunde problemet lösas på en enda rad kod.
-
-Genom att ställa in `TypeNameHandling = TypeNameHandling.Auto` (eller `Objects`) i `JsonSerializerSettings`, skriver `Newtonsoft.Json` automatiskt ut en `$type`-egenskap i JSON-filen (t.ex. `"$type": "PragueParking.Core.Car, PragueParking.Core"`). När filen sedan läses in igen, vet deserialiseraren exakt vilken klass den ska skapa. Detta var en stor lärdom i att lita på och använda ramverkets inbyggda funktioner istället för att återuppfinna hjulet.
+**Lösningen:** Jag insåg att `Newtonsoft.Json` redan har en inbyggd lösning. Genom att ta bort min egna `JsonConverter` och istället lägga till inställningen `TypeNameHandling = TypeNameHandling.Auto` (en rad kod) så löstes allt. Biblioteket skriver då själv in vilken typ objektet har (t.ex. `"$type": "PragueParking.Core.Car"`) i JSON-filen. När filen läses in igen vet programmet exakt vilken klass den ska skapa. En viktig läxa: använd ramverkets inbyggda funktioner innan du bygger egna.
 
 **Utmaning 2: Den logiska konflikten med Buss-parkering (VG-delen)**
 
-Den absolut mest frustrerande utmaningen var att implementera VG-kravet för bussar.
+Den mest frustrerande utmaningen var VG-kravet för bussar.
 
-**Problemet:** I uppgiftsbeskrivningen står det: "Buss 16" och "En P-ruta har då storleken 4". Detta är en logisk omöjlighet. En buss med storlek 16 kan omöjligen parkeras på en P-ruta med storlek 4.
+**Problemet:** I uppgiften stod det att en buss har storlek 16, men en P-ruta har storlek 4. Detta är en logisk omöjlighet; bussen kan inte parkeras.
 
-**Felsökningen:** Jag felsökte min kod i `ParkingGarage.cs` i timmar. Jag trodde att min logik för att kontrollera tillgängligt utrymme var felaktig, eftersom en buss aldrig kunde parkeras.
+**Felsökningen:** Jag letade fel i min egen parkeringslogik (`ParkingGarage.cs`) i timmar. Jag var säker på att min kod för att kolla ledig plats var fel.
 
-**Lösningen:** Som mina anteckningar (bild 2) bekräftar, insåg jag till slut att detta inte var ett fel i min kod, utan en logisk motsägelse i själva uppgiftsbeskrivningen. Lösningen var att använda den flexibilitet vi själva hade byggt: `config.json`.
+**Lösningen:** Till slut insåg jag (vilket mina anteckningar, bild 2, bekräftar) att felet inte låg i min kod, utan i själva uppgiften. Lösningen var att använda `config.json`-filen som vi hade byggt. Genom att ändra `SpotSize` i config-filen från 4 till 16 (eller ett annat passande värde) så fungerade systemet. En buss (16) kunde nu parkera på en P-plats (16).
 
-Genom att i min `config.json` ändra `SpotSize` från 4 till 16 (eller ett annat värde som var delbart med alla fordonsstorlekar), kunde systemet fungera. En buss (16) kunde nu parkeras på en P-plats (16).
-
-Detta krävde också en uppdatering i `Program.cs` (`GetSpotMarkup`-metoden) för att visuellt kunna hantera fordon som tar upp hela platsen (som en buss eller bil) jämfört med fordon som kan dela plats (som MC och cyklar). Jag lade även till en specialregel för bussar (`BusSpotLimit` på rad 60 och 76 i `ParkingGarage.cs` nämndes i mina anteckningar) för att säkerställa att de bara kunde parkera på de platser som var avsedda för dem.
+Detta krävde också en liten uppdatering i `Program.cs` (`GetSpotMarkup`-metoden) för att rita ut kartan snyggt, oavsett om en plats höll en stor buss eller flera motorcyklar. Jag lade också till en extra regel för bussar (`BusSpotLimit` nämnd i mina anteckningar) för att se till att de bara parkerade på avsedda platser.
 
 ### 4.4 Metoder och modeller som använts
 
-* **OOP (Objektorienterad programmering):** Kärnan i hela projektet.
-* **Arv:** En `Vehicle`-basklass/interface som specifika fordon som `Car` och `Bus` ärver ifrån.
-* **Polymorfism:** Möjligheten att lagra alla fordonstyper i en `List<IVehicle>` och behandla dem lika, trots att deras underliggande logik (t.ex. `Size`) skiljer sig.
-* **Interface-baserad design:** Genom att koda mot `IVehicle` och `IParkingSpot` (som VG-kravet angav) blev koden mer flexibel och lättare att testa.
-* **N-lagersarkitektur (förenklad):** Tydlig uppdelning mellan Presentation (`.App`), Affärslogik (`.Core`) och Dataåtkomst (`.DataAccess`).
-* **TDD (Test-Driven Development):** Använde `MSTest` för att skriva enhetstester innan eller samtidigt som logiken skrevs, vilket hjälpte till att verifiera att mina metoder (särskilt kostnadsberäkningen) var korrekta.
-* **JSON Serialisering:** Använde `Newtonsoft.Json` för att persistent lagra data.
+* **OOP (Objektorienterad programmering):** Hela grunden för projektet.
+* **Arv:** En `Vehicle`-basklass/interface som `Car` och `Bus` ärvde ifrån.
+* **Polymorfism:** Möjligheten att lagra alla fordonstyper i en och samma lista (`List<IVehicle>`).
+* **Interface:** Användningen av `IVehicle` och `IParkingSpot` gjorde koden flexibel och lättare att testa.
+* **Uppdelad arkitektur (N-lager):** Tydlig uppdelning mellan Gränssnitt (`.App`), Logik (`.Core`) och Datalagring (`.DataAccess`).
+* **Enhetstestning (TDD):** Använde `MSTest` för att skriva tester, speciellt för att se till att kostnadsberäkningen blev rätt.
+* **JSON-serialisering:** Använde `Newtonsoft.Json` för att spara data till fil.
 
-### 4.5 Hur du skulle lösa uppgiften nästa gång
+### 4.5 Hur jag skulle lösa uppgiften nästa gång
 
-* **JSON-hantering:** Jag skulle från första början använt `TypeNameHandling` istället för att ens försöka skriva en egen `JsonConverter`.
-* **Validering:** Jag skulle lägga mer tid på robust validering av `config.json` vid uppstart. Om en användare skriver in "Bil" istället för "Car" eller sätter priser till negativa tal, bör programmet ge tydliga felmeddelanden istället för att krascha.
-* **Enhetstester:** Jag skulle skrivit fler och mer djupgående enhetstester, särskilt för kantfall som att parkera en buss, eller försöka flytta ett fordon till en full plats.
+* **JSON-hantering:** Jag skulle direkt använt `TypeNameHandling` istället för att slösa tid på att bygga en egen `JsonConverter`.
+* **Bättre validering:** Jag skulle lagt mer tid på att validera `config.json` när programmet startar. Om en användare skriver "Bil" istället för "Car", eller ett negativt pris, ska programmet ge ett tydligt felmeddelande, inte krascha.
+* **Fler enhetstester:** Jag skulle skrivit fler tester för "kantfall" (edge cases), som att parkera en buss eller försöka flytta ett fordon till en redan full plats.
 
 ### 4.6 Slutsats hemuppgift
 
-Detta var en extremt lärorik uppgift. Den tvingade mig att på djupet förstå varför OOP är användbart. Att separera logiken i olika projekt kändes först som överkurs, men jag insåg snabbt hur enkelt det gjorde det att underhålla och testa koden. Utmaningen med JSON-serialisering och den logiska buggen i uppgiftsbeskrivningen var frustrerande, men gav mig värdefulla insikter i felsökning och vikten av att ifrågasätta kraven.
+Detta var en väldigt lärorik uppgift. Jag fick en djupare förståelse för *varför* OOP är användbart. Att dela upp koden i olika projekt kändes först onödigt, men jag insåg snabbt hur mycket enklare det gjorde det att testa och underhålla koden. Problemen med JSON och den logiska buggen i uppgiften var frustrerande, men också en bra lärdom i felsökning och att våga ifrågasätta kraven.
 
 ### 4.7 Slutsats kurs
 
-Kursen har varit ett stort steg upp från grundläggande programmering. Att gå från att skriva all kod i en enda `Program.cs` till att designa en helhetslösning med klassbibliotek, interface och extern datahantering har varit både utmanande och väldigt givande. Jag känner mig nu mycket mer bekväm med att strukturera kod på ett professionellt och skalbart sätt.
+Kursen var ett stort steg upp från grunderna. Att gå från att skriva all kod i en enda fil (`Program.cs`) till att designa en hel lösning med klassbibliotek, interface och filhantering var både utmanande och givande. Jag känner mig nu mycket mer bekväm med att strukturera kod på ett professionellt och hållbart sätt.
+```
