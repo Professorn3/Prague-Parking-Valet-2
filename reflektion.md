@@ -6,7 +6,7 @@ Här är min personliga reflektion över projektet och kursen.
 
 ### 4.1 Sammanfattning
 
-Det här projektet handlade om att gå från enklare C#-scripting till att bygga en riktig, objektorienterad applikation. Målet var att strukturera om (refaktorera) ett gammalt system så att det blev lättare att underhålla och bygga vidare på. Jag använde klasser, arv, interface och delade upp koden i flera projekt (klassbibliotek) för att lyckas.
+Det här projektet handlade om att gå från enklare C#-scripting till att bygga en riktig, objektorienterad applikation. Målet var att strukturera om ett gammalt system så att det blev lättare att underhålla och bygga vidare på. Jag använde klasser, arv, interface och delade upp koden i flera projekt (klassbibliotek) för att lyckas. Detta projeketet är en påbyggnad på vår första modell "Prague-Parking-Valet" 
 
 ### 4.2 Hur jag löste uppgiften
 
